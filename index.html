@@ -21,7 +21,7 @@
 --r:14px;--r2:10px;
 --ease:cubic-bezier(.16,1,.3,1);
 }
-html,body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+html,body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased;max-width:100vw}
 body{padding-top:env(safe-area-inset-top);padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 input,textarea,button{font-family:inherit;font-size:inherit}
 .app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
@@ -50,7 +50,7 @@ input,textarea,button{font-family:inherit;font-size:inherit}
 /* Stats row */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
 .stat{background:rgba(255,255,255,.04);border:1px solid var(--bd2);border-radius:var(--r2);padding:8px 0;text-align:center}
-.stat-v{font-size:18px;font-weight:800;font-feature-settings:'tnum';letter-spacing:-.5px}
+.stat-v{font-size:17px;font-weight:800;font-feature-settings:'tnum';letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat-v.cyan{color:var(--ac)}.stat-v.green{color:var(--ok)}.stat-v.violet{color:var(--ac2)}.stat-v.amber{color:var(--wn)}
 .stat-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-top:1px}
 
@@ -185,7 +185,20 @@ function load(){try{const d=localStorage.getItem('fit30');if(d){const p=JSON.par
 function save(){try{localStorage.setItem('fit30',JSON.stringify({c:st.ck,w:st.wt,a:st.wa,h:st.hp,n:st.nt,s:st.sel}));}catch(e){}}
 
 let _needsScroll=false;
-function toggle(di,k){const key=`${di}_${k}`;st.ck[key]=!st.ck[key];save();const sy=window.scrollY;render();window.scrollTo(0,sy);}
+function toggle(di,k){
+const key=`${di}_${k}`;st.ck[key]=!st.ck[key];save();
+// Direct DOM update — no re-render
+const box=document.querySelector(`[data-ck="${key}"]`);
+if(box){
+  const done=st.ck[key];
+  box.classList.toggle('checked',done);
+  const row=box.closest('.chk');
+  if(row)row.classList.toggle('done',done);
+}
+// Update day button appearance
+const dc=dayCount(di);const btn=document.querySelector(`[data-day="${di}"]`);
+if(btn){btn.className='day-btn'+(di==st.sel?' sel':dc>=6?' done':dc>=2?' partial':'');}
+}
 function isChk(di,k){return!!st.ck[`${di}_${k}`];}
 function dayCount(di){let c=0;for(const k in st.ck)if(k.startsWith(di+'_')&&st.ck[k])c++;return c;}
 
@@ -210,7 +223,7 @@ let h=`
     <div class="stat"><div class="stat-v amber">2.5L</div><div class="stat-l">Water</div></div>
   </div>
   <div class="days-row" id="drow">`;
-for(let i=0;i<30;i++){const dc=dayCount(i),cls=i===st.sel?'sel':dc>=6?'done':dc>=2?'partial':'';h+=`<button class="day-btn ${cls}" onclick="setSel(${i})">${i+1}</button>`;}
+for(let i=0;i<30;i++){const dc=dayCount(i),cls=i===st.sel?'sel':dc>=6?'done':dc>=2?'partial':'';h+=`<button class="day-btn ${cls}" data-day="${i}" onclick="setSel(${i})">${i+1}</button>`;}
 h+=`</div></div><div class="content">`;
 
 // Today tab
@@ -227,22 +240,22 @@ h+=`<div class="sh">🍽️ Meals</div>`;
 const meals=[{k:'bk',l:'Breakfast',m:bm,dk:'breakfast'},{k:'sn',l:'Snack',m:sm,dk:'snack'},{k:'ln',l:'Lunch',m:lm,dk:'lunch'},{k:'dn',l:'Dinner',m:dm,dk:'dinner'}];
 for(const item of meals){if(!item.m)continue;
 const done=isChk(st.sel,item.dk);
-h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'${item.dk}')">✓</button><div><div style="font-size:11px;font-weight:700;color:var(--ac);margin-bottom:1px">${item.l}</div><div class="chk-title">${item.m.n}</div><div class="chk-sub"><span class="tag cyan">${item.m.cal} cal</span><span class="tag green">${item.m.p}g protein</span>${item.m.t?`<span class="tag violet">${item.m.t}</span>`:''}</div><div class="chk-why">${item.m.why}</div>${item.m.ing?`<button class="chk-link" onclick="openRecipe('${dy[item.k]}')">View full recipe →</button>`:''}</div></div>`;}
+h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" data-ck="${st.sel}_${item.dk}" onclick="toggle(${st.sel},'${item.dk}')">✓</button><div><div style="font-size:11px;font-weight:700;color:var(--ac);margin-bottom:1px">${item.l}</div><div class="chk-title">${item.m.n}</div><div class="chk-sub"><span class="tag cyan">${item.m.cal} cal</span><span class="tag green">${item.m.p}g protein</span>${item.m.t?`<span class="tag violet">${item.m.t}</span>`:''}</div><div class="chk-why">${item.m.why}</div>${item.m.ing?`<button class="chk-link" onclick="openRecipe('${dy[item.k]}')">View full recipe →</button>`:''}</div></div>`;}
 
 // Workout / Walk / Active / Rest
 if(dy.type==='workout'&&wo){
 h+=`<div class="sh">🏋️ Workout ${dy.wl}</div><div class="gc green"><div style="font-size:16px;font-weight:800;margin-bottom:4px">${wo.name}</div><div style="font-size:13px;color:var(--t2);line-height:1.55;margin-bottom:8px">${wo.why}</div><div style="font-size:11px;color:var(--t3);font-style:italic;margin-bottom:4px">Week ${dy.wi+1}: ${weekProg}</div></div>`;
 h+=`<div class="phase-bar warm">🔥 WARM-UP (5 min): ${wo.warmup}</div>`;
 for(let i=0;i<wo.ex.length;i++){const e=wo.ex[i],done=isChk(st.sel,'ex'+i);
-h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'ex${i}')">✓</button><div><div class="ex-card" style="border:none;padding:0"><div class="ex-num">${i+1}</div><div><div class="ex-name">${e.name} <span class="ex-sets">· ${e.s}</span></div><div class="ex-why">${e.why}</div></div></div></div></div>`;}
+h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" data-ck="${st.sel}_ex${i}" onclick="toggle(${st.sel},'ex${i}')">✓</button><div><div class="ex-card" style="border:none;padding:0"><div class="ex-num">${i+1}</div><div><div class="ex-name">${e.name} <span class="ex-sets">· ${e.s}</span></div><div class="ex-why">${e.why}</div></div></div></div></div>`;}
 h+=`<div class="phase-bar cool">❄️ COOLDOWN (5 min): ${wo.cooldown}</div>`;}
 
 if(dy.type==='walk'){const done=isChk(st.sel,'walk');
 const walkTip=dy.sg<=3000?"One 10-minute walk at any time. Soft surfaces (grass, track) are easier on knees.":dy.sg<=4000?"Two short walks (10 min each). Same health benefits as 30 continuous minutes.":dy.sg<=5000?"Three 10-min walks. Monitor knees — if sharp pain, stay at last week's level.":"Almost at 6,000 steps! Break into walks throughout the day. Long single walk if knees feel good.";
-h+=`<div class="sh">🚶 Walking</div><div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'walk')">✓</button><div><div class="chk-title">${dy.sg.toLocaleString()} steps today</div><div class="chk-why">${walkTip}</div></div></div>`;}
+h+=`<div class="sh">🚶 Walking</div><div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" data-ck="${st.sel}_walk" onclick="toggle(${st.sel},'walk')">✓</button><div><div class="chk-title">${dy.sg.toLocaleString()} steps today</div><div class="chk-why">${walkTip}</div></div></div>`;}
 
 if(dy.type==='active'){const done=isChk(st.sel,'active');
-h+=`<div class="sh">🎯 Active Fun</div><div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'active')">✓</button><div><div class="chk-title">30 min of enjoyable movement</div><div class="chk-why">Not 'exercise' — FUN. Walk in park, YouTube dance, deep-clean, cycling, swimming. Finding activities you enjoy = lifelong fitness.</div></div></div>`;}
+h+=`<div class="sh">🎯 Active Fun</div><div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" data-ck="${st.sel}_active" onclick="toggle(${st.sel},'active')">✓</button><div><div class="chk-title">30 min of enjoyable movement</div><div class="chk-why">Not 'exercise' — FUN. Walk in park, YouTube dance, deep-clean, cycling, swimming. Finding activities you enjoy = lifelong fitness.</div></div></div>`;}
 
 if(dy.type==='rest'){h+=`<div class="sh">🧘 Rest Day</div><div class="gc" style="border-left:3px solid var(--t3)"><div style="font-size:14px;font-weight:700;margin-bottom:4px">Recovery Day</div><div style="font-size:13px;color:var(--t2);line-height:1.55">No exercise required. Light walk OK. Muscles recover and grow on rest days. Use today for meal prep + grocery planning.</div></div>`;}
 
@@ -250,7 +263,7 @@ if(dy.type==='rest'){h+=`<div class="sh">🧘 Rest Day</div><div class="gc" styl
 h+=`<div class="sh">💊 Daily Essentials</div>`;
 const essentials=[['water','💧 2.5L water (500ml before each meal)','Pre-meal water = 44% more weight loss'],['oil','🥄 Oil: max 2-3 tsp today','1 extra tbsp = 120 hidden calories'],['chai','☕ Max 1 sweetened chai','Extra cups → green tea'],['log','📱 Log ALL food before bed','Loggers lost 2× more weight'],['sleep','😴 7.5+ hrs sleep','Poor sleep = 55% less fat loss'],['weigh','⚖️ Morning weigh-in','Before eating, after bathroom']];
 for(const[k,title,sub]of essentials){const done=isChk(st.sel,k);
-h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'${k}')">✓</button><div><div class="chk-title">${title}</div><div class="chk-sub">${sub}</div></div></div>`;}
+h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" data-ck="${st.sel}_${k}" onclick="toggle(${st.sel},'${k}')">✓</button><div><div class="chk-title">${title}</div><div class="chk-sub">${sub}</div></div></div>`;}
 
 // Context cards
 if(dy.prep)h+=`<div class="gc warn" style="margin-top:12px"><div style="font-size:12px"><strong style="color:var(--wn)">🥘 Meal Prep:</strong> Boil 6 eggs · Soak dal/rajma · Chop veggies · Make chutney · Portion chicken 130-150g</div></div>`;
@@ -303,14 +316,14 @@ h+=`<div class="nav"><button class="nav-btn ${st.tab==='today'?'active':''}" onc
 // Modal container
 h+=`<div class="modal-bg" id="modal-bg" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div id="modal-body"></div></div></div>`;
 
-document.getElementById('app').innerHTML=h;
+var appEl=document.getElementById('app');appEl.style.minHeight=appEl.offsetHeight+'px';appEl.innerHTML=h;requestAnimationFrame(function(){appEl.style.minHeight='';});
 
 // Scroll selected day into view
-if(_needsScroll){_needsScroll=false;setTimeout(()=>{const row=document.getElementById('drow');if(row){const btn=row.children[st.sel];if(btn)btn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}},50);}
+if(_needsScroll){_needsScroll=false;setTimeout(()=>{const row=document.getElementById('drow');if(row){const btn=row.children[st.sel];if(btn){const left=btn.offsetLeft-row.offsetWidth/2+btn.offsetWidth/2;row.scrollTo({left:Math.max(0,left),behavior:'auto'});}}},20);}
 }
 
 // ==================== ACTIONS ====================
-window.setSel=function(i){st.sel=i;save();_needsScroll=true;render();window.scrollTo(0,0);};
+window.setSel=function(i){st.sel=i;save();_needsScroll=true;var sy=window.scrollY;render();window.scrollTo(0,sy);requestAnimationFrame(function(){window.scrollTo(0,sy);});};
 window.setTab=function(t){st.tab=t;_needsScroll=true;render();window.scrollTo(0,0);};
 window.setWt=function(w,v){st.wt[w]=v;save();};
 window.setWa=function(w,v){st.wa[w]=v;save();};
