@@ -184,7 +184,8 @@ const gM=id=>ML[id]||null;
 function load(){try{const d=localStorage.getItem('fit30');if(d){const p=JSON.parse(d);st.ck=p.c||{};st.wt=p.w||{};st.wa=p.a||{};st.hp=p.h||{};st.nt=p.n||{};if(typeof p.s==='number')st.sel=p.s;}}catch(e){}}
 function save(){try{localStorage.setItem('fit30',JSON.stringify({c:st.ck,w:st.wt,a:st.wa,h:st.hp,n:st.nt,s:st.sel}));}catch(e){}}
 
-function toggle(di,k){const key=`${di}_${k}`;st.ck[key]=!st.ck[key];save();render();}
+let _needsScroll=false;
+function toggle(di,k){const key=`${di}_${k}`;st.ck[key]=!st.ck[key];save();const sy=window.scrollY;render();window.scrollTo(0,sy);}
 function isChk(di,k){return!!st.ck[`${di}_${k}`];}
 function dayCount(di){let c=0;for(const k in st.ck)if(k.startsWith(di+'_')&&st.ck[k])c++;return c;}
 
@@ -305,12 +306,12 @@ h+=`<div class="modal-bg" id="modal-bg" onclick="closeModal()"><div class="modal
 document.getElementById('app').innerHTML=h;
 
 // Scroll selected day into view
-setTimeout(()=>{const row=document.getElementById('drow');if(row){const btn=row.children[st.sel];if(btn)btn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}},50);
+if(_needsScroll){_needsScroll=false;setTimeout(()=>{const row=document.getElementById('drow');if(row){const btn=row.children[st.sel];if(btn)btn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}},50);}
 }
 
 // ==================== ACTIONS ====================
-window.setSel=function(i){st.sel=i;save();render();window.scrollTo(0,0);};
-window.setTab=function(t){st.tab=t;render();window.scrollTo(0,0);};
+window.setSel=function(i){st.sel=i;save();_needsScroll=true;render();window.scrollTo(0,0);};
+window.setTab=function(t){st.tab=t;_needsScroll=true;render();window.scrollTo(0,0);};
 window.setWt=function(w,v){st.wt[w]=v;save();};
 window.setWa=function(w,v){st.wa[w]=v;save();};
 window.setHp=function(w,v){st.hp[w]=v;save();};
@@ -345,7 +346,7 @@ document.getElementById('modal-bg').classList.remove('show');
 document.body.style.overflow='';};
 
 // ==================== INIT ====================
-load();render();
+load();_needsScroll=true;render();
 
 // PWA manifest (inline blob)
 const icon=document.createElement('canvas');icon.width=512;icon.height=512;
