@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fit30">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="30-Day Fat Loss Tracker — Evidence-based transformation plan">
+<link rel="manifest" id="mf">
+<link rel="apple-touch-icon" id="ati">
+<title>Fit30</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a24;--bg4:#222230;
+--t1:rgba(255,255,255,.92);--t2:rgba(255,255,255,.60);--t3:rgba(255,255,255,.38);
+--ac:#06b6d4;--ac2:#8b5cf6;--ok:#10b981;--no:#ef4444;--wn:#f59e0b;
+--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.04);
+--r:14px;--r2:10px;
+--ease:cubic-bezier(.16,1,.3,1);
+}
+html,body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{padding-top:env(safe-area-inset-top);padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+input,textarea,button{font-family:inherit;font-size:inherit}
+.app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+
+/* Glass cards */
+.gc{background:rgba(255,255,255,.04);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;transition:transform .2s var(--ease)}
+.gc:active{transform:scale(.985)}
+.gc.accent{border-left:3px solid var(--ac)}
+.gc.green{border-left:3px solid var(--ok)}
+.gc.violet{border-left:3px solid var(--ac2)}
+.gc.warn{border-left:3px solid var(--wn)}
+
+/* Header */
+.hdr{padding:16px 16px 14px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-60%;right:-20%;width:60%;height:200%;background:radial-gradient(ellipse,rgba(6,182,212,.08),transparent 60%);pointer-events:none}
+.hdr::after{content:'';position:absolute;bottom:-40%;left:-10%;width:40%;height:150%;background:radial-gradient(ellipse,rgba(139,92,246,.06),transparent 60%);pointer-events:none}
+.hdr *{position:relative;z-index:1}
+.wk-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);opacity:.8}
+.day-title{font-size:20px;font-weight:800;margin:4px 0 6px;line-height:1.2;letter-spacing:-.3px}
+.day-type{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.day-type.workout{background:rgba(16,185,129,.15);color:var(--ok)}
+.day-type.walk{background:rgba(6,182,212,.15);color:var(--ac)}
+.day-type.active{background:rgba(139,92,246,.15);color:var(--ac2)}
+.day-type.rest{background:rgba(255,255,255,.06);color:var(--t2)}
+
+/* Stats row */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--bd2);border-radius:var(--r2);padding:8px 0;text-align:center}
+.stat-v{font-size:18px;font-weight:800;font-feature-settings:'tnum';letter-spacing:-.5px}
+.stat-v.cyan{color:var(--ac)}.stat-v.green{color:var(--ok)}.stat-v.violet{color:var(--ac2)}.stat-v.amber{color:var(--wn)}
+.stat-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-top:1px}
+
+/* Day selector */
+.days-row{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:2px 0 4px}
+.days-row::-webkit-scrollbar{display:none}
+.day-btn{width:30px;height:30px;border-radius:8px;border:none;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s var(--ease);color:var(--t2);background:rgba(255,255,255,.04)}
+.day-btn.sel{background:var(--ac);color:#000;box-shadow:0 0 16px rgba(6,182,212,.3)}
+.day-btn.done{background:rgba(16,185,129,.2);color:var(--ok)}
+.day-btn.partial{background:rgba(6,182,212,.1)}
+
+/* Content */
+.content{padding:0 14px 16px;overflow-x:hidden}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* Section headers */
+.sh{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* Checklist */
+.chk{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd2);align-items:flex-start;transition:opacity .3s}
+.chk.done{opacity:.4}
+.chk-box{width:22px;height:22px;border-radius:7px;border:2px solid rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s var(--ease);background:transparent;color:transparent}
+.chk-box.checked{background:var(--ok);border-color:var(--ok);color:#000}
+.chk-title{font-size:14px;font-weight:600;line-height:1.35}
+.chk-sub{font-size:12px;color:var(--t3);margin-top:2px;line-height:1.45}
+.chk-why{font-size:12px;color:var(--t2);margin-top:4px;line-height:1.55}
+.chk-link{font-size:12px;color:var(--ac);font-weight:600;cursor:pointer;margin-top:4px;background:none;border:none;padding:0;text-align:left}
+
+/* Do/Don't cards */
+.dd-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dd-card{border-radius:var(--r2);padding:12px;font-size:12px;line-height:1.5}
+.dd-card.do{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15)}
+.dd-card.dont{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12)}
+.dd-card h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.dd-card.do h4{color:var(--ok)}.dd-card.dont h4{color:var(--no)}
+.dd-card li{margin-bottom:4px;color:var(--t2);list-style:none;padding-left:0}
+.dd-card li::before{content:'• ';color:var(--t3)}
+
+/* Exercise card */
+.ex-card{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd2);align-items:flex-start}
+.ex-num{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--ok),var(--ac));color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.ex-name{font-size:14px;font-weight:600}.ex-sets{font-size:12px;color:var(--t3);font-weight:500}
+.ex-why{font-size:12px;color:var(--t2);line-height:1.5;margin-top:2px}
+
+/* Bottom nav */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;padding:8px 16px calc(8px + env(safe-area-inset-bottom));background:rgba(10,10,15,.8);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border-top:1px solid var(--bd);z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:transparent;cursor:pointer;padding:6px 0;color:var(--t3);transition:color .2s}
+.nav-btn.active{color:var(--ac)}
+.nav-btn span:first-child{font-size:20px}
+.nav-btn span:last-child{font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s}
+.modal-bg.show{display:flex;opacity:1}
+.modal{background:var(--bg2);border-radius:20px 20px 0 0;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;padding:16px 20px calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform .4s var(--ease)}
+.modal-bg.show .modal{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:0 auto 16px}
+.modal-close{position:absolute;right:16px;top:14px;width:32px;height:32px;border-radius:16px;background:var(--bg3);border:1px solid var(--bd);color:var(--t2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:12px;padding-right:40px;line-height:1.25}
+.modal-section{font-size:14px;line-height:1.7;color:var(--t2);margin-bottom:14px}
+
+/* Progress tab */
+.input-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.input-label{font-size:12px;font-weight:600;color:var(--t3);width:52px;flex-shrink:0}
+.input-field{flex:1;padding:8px 12px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-feature-settings:'tnum';min-width:0;max-width:100%}
+.input-delta{font-size:12px;font-weight:700;width:52px;text-align:right;flex-shrink:0}
+
+/* Streak grid */
+.streak{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.streak-hdr{text-align:center;font-size:9px;font-weight:700;color:var(--t3);padding-bottom:4px}
+.streak-day{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--bd2);color:var(--t3);background:var(--bg3)}
+.streak-day.good{background:rgba(16,185,129,.3);border-color:rgba(16,185,129,.2);color:var(--ok)}
+.streak-day.great{background:var(--ok);border-color:var(--ok);color:#000}
+
+/* Accordion */
+.acc{border:1px solid var(--bd);border-radius:var(--r2);margin-bottom:8px;overflow:hidden;background:var(--bg3)}
+.acc-hdr{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:transparent;border:none;padding:14px 16px;cursor:pointer;color:var(--t1);font-size:14px;font-weight:600;transition:background .2s}
+.acc-hdr:active{background:var(--bg4)}
+.acc-arrow{font-size:12px;color:var(--t3);transition:transform .3s var(--ease);flex-shrink:0;margin-left:10px}
+.acc.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s var(--ease)}
+.acc.open .acc-body{max-height:2000px}
+.acc-inner{padding:0 16px 16px;font-size:13.5px;line-height:1.7;color:var(--t2)}
+.acc-inner p{margin-bottom:12px}
+
+/* Tag pills */
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;margin:0 4px 4px 0}
+.tag.cyan{background:rgba(6,182,212,.12);color:var(--ac)}
+.tag.green{background:rgba(16,185,129,.12);color:var(--ok)}
+.tag.violet{background:rgba(139,92,246,.12);color:var(--ac2)}
+.tag.amber{background:rgba(245,158,11,.12);color:var(--wn)}
+
+/* Warmup/cooldown */
+.phase-bar{border-radius:var(--r2);padding:10px 14px;font-size:12px;font-weight:600;line-height:1.5;margin:8px 0}
+.phase-bar.warm{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.15);color:var(--wn)}
+.phase-bar.cool{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.15);color:var(--ac)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim>*{animation:fadeUp .5s var(--ease) both}
+.anim>*:nth-child(1){animation-delay:0ms}.anim>*:nth-child(2){animation-delay:60ms}.anim>*:nth-child(3){animation-delay:120ms}.anim>*:nth-child(4){animation-delay:180ms}.anim>*:nth-child(5){animation-delay:240ms}.anim>*:nth-child(6){animation-delay:300ms}.anim>*:nth-child(7){animation-delay:360ms}.anim>*:nth-child(8){animation-delay:420ms}
+@media(prefers-reduced-motion:reduce){.anim>*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+// ==================== DATA ====================
+const ML={b1:{n:"Masala Egg Scramble + Toast",cal:340,p:26,c:28,f:14,fb:4,t:"10 min",why:"High-protein start with 26g protein from eggs. The toast gives you sustained energy. Eggs are the cheapest, most complete protein source.",ing:"3 eggs · 1 slice wheat bread · ½ cup onion · ½ cup tomato · ¼ cup bell pepper · ½ tsp oil · turmeric, salt, pepper",how:"Heat ½ tsp oil → sauté onion & pepper 2 min → add tomato + turmeric + salt 1 min → crack eggs, scramble 2 min → serve with toast"},b2:{n:"Moong Dal Chilla (2) + Chutney",cal:310,p:22,c:36,f:8,fb:6,t:"15 min",why:"Traditional Indian pancake that's protein-rich (22g). Moong dal is one of the highest-protein lentils.",ing:"½ cup moong dal soaked (80g) · ¼ cup onion · ¼ cup carrot · coriander · green chili · cumin · 1 tsp oil",how:"Blend soaked dal smooth → mix veggies & spices → spread thin on non-stick → cook 2 min/side → serve with mint chutney"},b3:{n:"Overnight Oats + Greek Yogurt",cal:330,p:22,c:42,f:8,fb:6,t:"5 min",why:"Zero morning effort — made night before. Greek yogurt adds 15g protein. Chia seeds keep you full.",ing:"½ cup oats · ¾ cup Greek yogurt · ½ cup milk · 1 tbsp chia · ½ cup berries · cinnamon · 1 tsp honey",how:"Night before: mix in jar → fridge → morning: top with fruit"},b4:{n:"Paneer Paratha (light) + Curd",cal:360,p:22,c:36,f:14,fb:4,t:"20 min",why:"Comfort food made healthy. Paneer gives 22g protein. Just ½ tsp oil on the tava instead of the usual tablespoon.",ing:"50g atta · 60g low-fat paneer · ¼ cup yogurt · green chili · coriander · cumin · ½ tsp oil",how:"Crumble paneer + spices → stuff in dough → roll gently → cook 3 min/side with ½ tsp oil"},b5:{n:"Besan Chilla (2) + Chutney",cal:300,p:16,c:32,f:12,fb:6,t:"15 min",why:"Besan (chickpea flour) is high in protein and fiber. Two chillas keep you full for hours.",ing:"½ cup besan · onion · tomato · coriander · green chili · cumin · 1 tsp oil",how:"Mix besan + water thin → add veggies & spices → cook thin 3 min/side"},b6:{n:"Veggie Omelette + Toast",cal:340,p:25,c:28,f:14,fb:5,t:"10 min",why:"2 whole eggs + 2 whites = 25g protein while keeping fat moderate.",ing:"2 eggs + 2 whites · 1 slice bread · mushrooms · spinach · onion · 1 tsp oil",how:"Sauté veggies → pour eggs → cook 2 min → flip → serve with toast"},b7:{n:"Egg Dosa + Coconut Chutney",cal:350,p:22,c:38,f:12,fb:3,t:"10 min",why:"South Indian favorite made protein-rich by cracking eggs on the dosa.",ing:"½ cup dosa batter · 2 eggs · 1 tsp oil · salt, pepper · coconut chutney",how:"Spread dosa → crack 2 eggs on top → cook until crispy → fold"},b8:{n:"Sprouted Moong Salad + Egg",cal:280,p:20,c:24,f:10,fb:6,t:"5 min",why:"Sprouted moong has 3x more bioavailable protein. Light but filling 280 cal.",ing:"1 cup sprouted moong · 1 boiled egg · onion · tomato · lemon · chaat masala",how:"Toss sprouts with veggies, lemon, chaat masala → top with egg"},l1:{n:"Chicken Curry + Brown Rice + Raita",cal:430,p:38,c:42,f:12,fb:5,t:"25 min",why:"Highest protein lunch at 38g. Only 1 tsp oil for the whole curry.",ing:"130g chicken · ½ cup brown rice · yogurt · onion · tomato · 1 tsp oil · spices",how:"1 tsp oil → cumin → sauté onion → ginger-garlic → tomato + spices → chicken + water → simmer 15 min"},l2:{n:"Chicken Stir-Fry Bowl",cal:420,p:40,c:38,f:12,fb:6,t:"20 min",why:"Stir-frying uses less oil and keeps veggies crunchy. 40g protein.",ing:"140g chicken · ½ cup rice · veggies (150g) · soy sauce · 1 tsp oil · ginger-garlic",how:"Sear chicken 4 min → stir-fry veggies 3 min → chicken back + soy sauce → over rice"},l3:{n:"Rajma + Brown Rice + Salad",cal:420,p:20,c:58,f:10,fb:14,t:"25 min",why:"Rich in fiber (14g!). Lower protein — compensate with high-protein dinner.",ing:"¾ cup rajma · ½ cup rice · onion · tomatoes · 1 tsp oil · spices",how:"IP: cook rajma 20 min → masala → simmer. Makes 2 servings!"},l4:{n:"Chicken Lettuce Wraps",cal:380,p:38,c:22,f:16,fb:4,t:"15 min",why:"Low-carb, high-protein. Lettuce replaces roti, saving 100+ calories.",ing:"140g ground chicken · lettuce · onion · bell pepper · soy sauce · sriracha · 1 tsp oil",how:"Cook chicken + garlic → add veggies → soy sauce + sriracha → spoon into lettuce"},l5:{n:"Chicken Tikka Wrap",cal:420,p:40,c:34,f:14,fb:5,t:"20 min",why:"Yogurt tandoori marinade = no oil needed. 40g protein in a wrap.",ing:"140g chicken · 1 tortilla · yogurt · tandoori masala · veggies",how:"Marinate in yogurt + tandoori → pan-sear 5 min/side → slice → wrap"},l6:{n:"Egg Fried Rice",cal:380,p:22,c:44,f:12,fb:4,t:"15 min",why:"Cold rice has more resistant starch = fewer absorbed calories. 2 eggs add protein.",ing:"¾ cup cold rice · 2 eggs · veggies · onion · soy sauce · 1 tsp oil",how:"Scramble eggs → stir-fry veggies → cold rice HIGH heat → soy sauce → eggs back"},l7:{n:"Masoor Dal + Paneer Bhurji + Roti",cal:480,p:35,c:45,f:18,fb:8,t:"25 min",why:"Research-backed high-protein Indian meal — 35g protein. Traditional thali only gives 15-20g.",ing:"40g masoor dal · 100g paneer · 1 roti · onion · tomato · 1 tsp oil",how:"Pressure cook dal → scramble paneer with masala → serve with roti"},l8:{n:"Soy Chunks Curry + Roti",cal:380,p:22,c:40,f:12,fb:6,t:"20 min",why:"Soy chunks = #1 veg protein (52g/100g dry!). Just 25g dry = full serving.",ing:"25g soy chunks · 1 roti · veggies · onion · tomato · 1 tsp oil · spices",how:"Soak soy 10 min → squeeze → sauté masala → add soy + water → simmer 8 min"},d1:{n:"Dal Tadka + 1 Roti + Spinach",cal:400,p:22,c:50,f:12,fb:12,t:"25 min",why:"Comfort food. Spinach adds iron. Only 1 tsp ghee for tadka.",ing:"½ cup toor dal · 1 roti · spinach · onion · tomato · 1 tsp ghee · spices",how:"Pressure cook dal → tadka: 1 tsp ghee, cumin, garlic, onion → sauté spinach"},d2:{n:"Egg Bhurji + 1 Roti + Salad",cal:430,p:28,c:42,f:17,fb:7,t:"15 min",why:"Quick 15-min dinner. 3 eggs = 28g protein. Big salad adds volume with zero calories.",ing:"3 eggs · 1 roti · onion · tomato · green chili · turmeric · 1 tsp oil · salad",how:"Sauté onion + chili → tomato + turmeric → scramble eggs → serve with roti + salad"},d3:{n:"Grilled Chicken Salad Bowl",cal:400,p:42,c:24,f:16,fb:6,t:"20 min",why:"Highest protein dinner at 42g! Avocado adds healthy fats your hormones need.",ing:"150g chicken · greens · tomato · cucumber · ¼ avocado · corn · olive oil · lemon",how:"Grill chicken 6 min/side → rest & slice → toss salad → top with chicken + avocado"},d4:{n:"Palak Chicken + 1 Roti",cal:420,p:40,c:34,f:14,fb:7,t:"25 min",why:"3 cups spinach = 20 cal but fills half your plate. With chicken = 40g protein.",ing:"140g chicken · 3 cups spinach · 1 roti · onion · tomato · 1 tsp oil · spices",how:"Blanch & blend spinach → sauté masala → add chicken → spinach paste → simmer"},d5:{n:"Chicken Soup + Garlic Toast",cal:380,p:38,c:30,f:12,fb:5,t:"25 min",why:"Soup is the most satiating food per calorie. Great for extra-hungry days.",ing:"130g chicken · 1 slice bread · veggies · onion · garlic · broth · herbs",how:"Sauté onion + garlic → chicken → veggies + broth + herbs → simmer 15 min"},d6:{n:"Chole + 1 Roti + Salad",cal:430,p:18,c:54,f:14,fb:12,t:"25 min",why:"High fiber (12g) keeps you full overnight. Pair with high-protein snack earlier.",ing:"1 can chickpeas · 1 roti · salad · onion · tomato · 1 tsp oil · chole masala",how:"Sauté onion → masala → chickpeas + water → simmer → mash a few for thickness"},d7:{n:"Tandoori Chicken + Salad",cal:380,p:38,c:18,f:14,fb:4,t:"30 min",why:"Baking uses NO extra oil. Yogurt marinade keeps it moist. 38g protein.",ing:"2 drumsticks · yogurt · tandoori masala · lemon · salad · raita",how:"Marinate 2+ hrs → oven 400°F 25 min → serve with salad + raita"},d8:{n:"Chicken Keema + 1 Roti",cal:400,p:35,c:34,f:14,fb:5,t:"20 min",why:"Ground chicken absorbs spices better. 35g protein. Peas add fiber.",ing:"130g ground chicken · 1 roti · onion · tomato · peas · spices · 1 tsp oil",how:"Sauté onion → ginger-garlic → chicken → tomato + peas + spices → cook 8 min"},s1:{n:"Greek Yogurt + ½ Banana",cal:180,p:15,why:"3x more protein than regular yogurt."},s2:{n:"Roasted Chana + Green Tea",cal:90,p:6,why:"Crunchy, 90 cal. Perfect mid-morning."},s3:{n:"Paneer Tikka Bites (80g)",cal:180,p:16,why:"Pan-grilled, feels like a treat, 16g protein."},s4:{n:"Hung Curd + Chia Seeds",cal:110,p:16,why:"Strained yogurt = concentrated protein. 110 cal!"},s5:{n:"Protein Smoothie",cal:200,p:20,why:"Yogurt + banana + spinach = 20g protein."},s6:{n:"Masala Buttermilk + Peanuts",cal:150,p:10,why:"Probiotic chaas + healthy fats."},s7:{n:"Dark Chocolate + 8 Almonds",cal:160,p:4,why:"Planned treat! Antioxidants + healthy fats."},s8:{n:"2 Egg Whites + Apple",cal:140,p:18,why:"Pure protein (18g) + fiber."}};
+
+const WK={A:{name:"Lower Body",why:"Legs have the biggest muscles — they burn the most calories 24/7. Every exercise is knee-safe.",warmup:"March 1 min → Arm circles 30s → Hip circles 30s → 10 glute bridges → 8 cat-cow → Quad stretch 15s/leg",cooldown:"Hamstring 20s/leg → Hip flexor 20s/side → Chest stretch 20s → Child's pose 30s → Spinal twist 15s/side → 5 breaths",ex:[{name:"Leg Press",s:"3×10-12",why:"Quads, glutes, hamstrings without body weight through knees. Keep above 90° knee angle."},{name:"Hip Thrust Machine",s:"3×12",why:"#1 glute exercise. Zero knee stress. Builds the biggest calorie-burning muscle."},{name:"Leg Curl (seated)",s:"3×12",why:"Hamstrings — strong hamstrings protect knees from injury."},{name:"Leg Extension",s:"3×12",why:"Targets VMO (inner thigh above kneecap) — critical for knee stability."},{name:"Calf Raises",s:"3×15",why:"Supports ankles, improves walking endurance. Always knee-safe."},{name:"Cable Woodchops",s:"3×10/side",why:"Core strength for back support. Standing — no knee load."}]},B:{name:"Upper Body + Core",why:"Gives legs rest while building calorie-burning muscle. Strong back improves posture. Core flattens tummy.",warmup:"March 1 min → Arm circles 30s → Hip circles 30s → 10 glute bridges → 8 cat-cow → Quad stretch 15s/leg",cooldown:"Hamstring 20s/leg → Hip flexor 20s/side → Chest stretch 20s → Child's pose 30s → Spinal twist 15s/side → 5 breaths",ex:[{name:"Lat Pulldown",s:"3×12",why:"Builds back (lats). Wide grip, pull to chest. Improves posture."},{name:"Chest Press Machine",s:"3×10",why:"Chest and triceps. Machine is safer when starting out."},{name:"Seated Cable Row",s:"3×12",why:"Squeeze shoulder blades. Counteracts hunched phone posture."},{name:"DB Shoulder Press (seated)",s:"3×10",why:"Shapes shoulders. Start 3-5 kg — harder than it looks!"},{name:"Cable Face Pulls",s:"3×15",why:"Most underrated exercise. Fixes rounded posture."},{name:"Hanging Knee Raises",s:"3×10",why:"Lower abs. If too hard, do lying leg raises on bench."}]},C:{name:"Full Body",why:"Hits every muscle group again. Training each muscle 2-3×/week beats 1×. Connects everything together.",warmup:"March 1 min → Arm circles 30s → Hip circles 30s → 10 glute bridges → 8 cat-cow → Quad stretch 15s/leg",cooldown:"Hamstring 20s/leg → Hip flexor 20s/side → Chest stretch 20s → Child's pose 30s → Spinal twist 15s/side → 5 breaths",ex:[{name:"Goblet Squat",s:"3×12",why:"Squat with dumbbell at chest. Sit to bench if knees hurt (box squat)."},{name:"DB Bench Press",s:"3×10",why:"Free-weight chest. Uses stabilizer muscles. Start 3-5 kg."},{name:"Romanian Deadlift (DB)",s:"3×10",why:"Hamstrings and glutes with minimal knee bend. Best for shaping legs."},{name:"Lat Pulldown (underhand)",s:"3×12",why:"Underhand = back + biceps in one. Efficient!"},{name:"Reverse Lunges",s:"3×8/leg",why:"Safer than forward lunges — shin stays vertical. Step BACK."},{name:"Forearm Plank",s:"3×30s",why:"Foundation core. Drop to knees if needed. Build up over time."}]}};
+
+const BR=["Welcome to Day 1! 🌟 Today is about starting, not being perfect. Eat the planned meals, do your first workout (35 min), and log everything. The scale may drop 1-2 kg this week — that's water. Real fat loss starts Week 2.","Day 2 — Walk day. Just one 10-min walk. Use today to get comfortable logging food. Even dietitians underestimate by ~223 cal, so measure with teaspoons.","Day 3 — Second workout + meal prep tonight. Boil 6 eggs, chop veggies, make chutney. 30 min prepping saves 2 hours during the week.","Day 4 — Walk day. Hunger settling? It usually does by day 7-10. Drink 500ml water before meals — that alone leads to 2 kg more weight loss over 12 weeks.","Day 5 — Final workout this week! Focus on form, not weight. Your brain is learning to activate muscles (weeks 1-4). Visible changes start weeks 6-12.","Day 6 — Fun day + PLANNED treat! 🎉 Any enjoyable movement + your guilt-free treat. Research: planned indulgences don't derail progress.","Day 7 — Rest & check-in 📊 Weigh, measure waist + hips, take a photo. Completing 7 days of logging is a HUGE win!","Week 2! 🔥 Body adjusted. Add a second 10-min walk (3,500 steps) and 2 extra reps per set. Small increases, big results.","Day 9 — Try soy chunks curry today. Soy = #1 veg protein (52g/100g dry). New recipes prevent boredom — the top reason people quit.","Day 10 — Mid-week workout. If exercises feel easy, add 1-2 kg. If anything hurts knees, skip it + extra set of something pain-free.","Day 11 — Halfway Week 2. Sleeping 7.5+ hrs? The Nedeltcheva study: 5.5 hrs sleep = 55% LESS fat loss on the same diet. Sleep determines if you lose fat or muscle.","Day 12 — Workout day! You're 2 reps stronger than Week 1. Muscle doesn't make you 'bulky' — it makes you tighter, toned, and burns more calories 24/7.","Day 13 — Treat day! 🎉 Try a different treat than last week. Variety prevents feeling restricted. Small mithai, ice cream, or cookies (~150-200 cal).","Day 14 — HALFWAY! 🎊 Compare this week's average weight to last week's. 0.3-0.5 kg drop = real fat loss. Period due? Weight may rise — that's water.","Week 3: Push Phase ⚡ Steps to 4,500-5,000. Third walk added. Monitor knees. Workouts: increase weight by smallest increment (1-2 kg).","Day 16 — Tandoori chicken tonight. Yogurt marinade = zero added oil. Marinate overnight for best flavor. Healthy food that tastes amazing = sustainable.","Day 17 — Hunger should be much lower than Week 1. Still hungry? Check: hitting 107g protein? 2.5L water? 25-30g fiber? These three control hunger.","Day 18 — 5,000 steps. Break into 3×10 min walks — identical health benefits to 30 continuous minutes. Soft surfaces for knees (grass > concrete).","Day 19 — Last workout Week 3. Compare weights to Week 1 — are you lifting heavier? Write it down. Strength = muscle preservation = better body composition.","Day 20 — Active day! Try YouTube dance, cycling, or swimming. Movement should be fun sometimes, not just 'exercise.'","Day 21 — Week 3 check-in 📊 Try on clothes from before. Most notice a difference by now. Body recomp can happen at the same weight!","Week 4: Final Push! 🏆 Steps 5,500-6,000 (if knees OK). Add 4th set to 2-3 exercises. Eating clean feels normal now. That's the goal.","Day 23 — 3+ weeks of new habits. Research: 30 days = 3× more likely to sustain at 6 months. You're rewiring your brain's reward pathways.","Day 24 — Experiment: try millet/ragi dosa. Higher fiber + minerals than white rice. Small experiments keep diet interesting.","Day 25 — Portion-controlled chicken biryani today (1 cup). You CAN eat real food you love — just in the right amounts. No food is off limits.","Day 26 — Second-to-last workout! Push yourself. Exercises that were hard Week 1 now feel manageable. That's transformation.","Day 27 — Last treat day! Pick your craving. After 30 days you've proven you can enjoy treats within a plan. 80/20 rule: mastered.","Day 28 — Week 4 check-in. Compare ALL measurements to Day 1. Weight, waist, hips, energy, workout weights. Full picture.","Day 29 — Strongest workout yet. Personal bests! First-time lifters gain 20-30% strength in 4 weeks.","🏆 DAY 30 — YOU DID IT! Final measurements + photos. Then: 5-7 day diet break at 1,500 cal (MATADOR study: 47% MORE fat loss with periodic breaks). Start Month 2 refreshed!"];
+
+const DD=[[["Log every single thing you eat","Drink water on waking","Measure oil with teaspoons"],["Don't skip meals — leads to overeating","Don't weigh after meals (morning only)","Don't try to be perfect — be consistent"]],[["Take a 10-min walk","Pre-fill 2.5L water bottle","Make tomorrow's oats tonight"],["Don't pour oil freely (1 tbsp = 120 cal)","Don't drink 2+ cups sweetened chai","Don't eat rice AND roti (pick one)"]],[["Focus on form, not heavy weight","Prep meals for Thu-Fri tonight","Soak dal/moong if needed tomorrow"],["Don't skip warm-up (cold muscles = injury)","Don't hold breath during exercises","Don't do forward lunges (reverse only)"]],[["500ml water before lunch and dinner","HALT check: Hungry, Angry, Lonely, Tired?","After lunch dishes → 10 min walk"],["Don't eat distracted (TV = 20% more)","Don't compare to others — your journey","Don't skip protein at any meal (aim 35g)"]],[["Push for 2 more reps on last set","Track workout weights in phone","Post-workout snack within 1 hour"],["Don't do jumping exercises (knee impact)","Don't skip cooldown stretches","Don't weigh after exercise (dehydrated)"]],[["Enjoy your planned treat!","Do fun physical activity 30 min","Log your treat normally"],["Don't turn 1 treat into all-day binge","Don't feel guilty — it improves adherence","Don't skip dinner to 'save' for treats"]],[["Measurements: waist + hips + photo","Calculate weekly average weight","Grocery list + meal prep today"],["Don't panic if scale hasn't moved","Don't compare daily weights (weekly avg)","Don't forget to prep for next week"]]];
+
+const COACH=[{t:"🔬 Calorie Science",c:"Your BMR (Mifflin-St Jeor) = 1,369 kcal/day. But South Asian women's actual BMR is 5-10% lower. Adjusted: ~1,270 kcal/day.\n\nWith <2,000 steps, TDEE is ~1,500 cal. A 20% deficit = 1,200 cal target.\n\nAs exercise + steps increase, TDEE rises to ~1,650-1,750 — deficit grows WITHOUT eating less."},{t:"🥩 Protein: 107g Non-Negotiable",c:"When you eat less, your body burns fat AND muscle. Protein prevents muscle loss.\n\n2024 meta-analysis: >1.3g/kg preserves muscle. You at 67 kg: 1.6 × 67 = 107g daily.\n\nEach kg muscle burns ~13 cal/day at rest. High-protein dieters preserved 142 kcal/day more metabolic rate.\n\nDistribute ~35g/meal for leucine threshold (2-3g) to trigger muscle repair.\n\nMacros: Protein 107g (36%) · Fat 40g (30%) · Carbs 103g (34%)."},{t:"⚠️ Hidden Calories in Indian Cooking",c:"3 changes save 400-700 cal/day:\n\n1. MEASURE OIL: Standard curry = 3-4 tbsp oil = 360-480 cal! Target: 2-3 tsp/day.\n\n2. LIMIT CHAI: 3-4 cups = 300-420 cal/day. Switch to 1 cup ≤1 tsp sugar.\n\n3. ONE CARB: Never rice + roti. Pick one, fill rest with protein + veggies.\n\nGhee: 1 tbsp = 120 cal. Use ½ tsp for tadka.\nBesan trick: Mix 25-30% into roti flour = +2-3g protein/roti."},{t:"🧠 Flexibility > Perfection",c:"Adherence predicts success more than which diet.\n\nRigid dieting → MORE cravings, HIGHER BMI (Stewart et al.). Flexible 80/20 rule = 15-25% better adherence.\n\nPlanned treats ≠ cheating. Planned deviations don't cause distress. UNPLANNED ones trigger 'what the hell' effect.\n\nNWCR (10,000+ maintainers): 75% weigh weekly, 78% eat breakfast. After 2 years maintenance, regain risk drops 50%."},{t:"🔗 If-Then Rules (Double Results)",c:"Implementation intentions doubled weight loss (4.2 vs 2.1 kg in 2 months).\n\nYour rules:\n• After morning tea → glass of water\n• After water → 2-min stretch\n• After lunch dishes → walk 10 min\n• Snack urge → water + wait 5 min\n• Stressed → step outside 2 min\n• After workout → log immediately\n\nHALT check: Am I Hungry, Angry, Lonely, or Tired? If not hunger, food won't fix it."},{t:"🚶 NEAT: Hidden Calorie Weapon",c:"NEAT varies 2,000 cal/day between people!\n\nFor stay-at-home, boosting NEAT > gym:\n• Stand during calls (+54 cal/6 hrs)\n• Hourly movement alarms\n• Calf raises while brushing teeth\n• Pace during TV ads\n• Vacuuming = 100-120 cal/30 min\n\nCaloric restriction suppresses NEAT by 150 cal/day unconsciously. Resistance training counters this."},{t:"😴 Sleep = Fat Loss",c:"Nedeltcheva (2010): Same calories, same diet.\n• 8.5 hrs → 3.1 lbs fat lost\n• 5.5 hrs → 1.3 lbs fat lost (55% less!)\n• Tired group lost 60% more muscle\n\nPoor sleep: -18% leptin + +28% ghrelin + +24% carb appetite.\n\nTarget: ≥7.5 hrs sleep. Rules: same time daily · cool dark room · no screens 30 min · no caffeine after 2 PM."},{t:"🔄 Menstrual Cycle & Weight",c:"Weight fluctuates 0.5-2.3 kg across cycle. Normal!\n\nLuteal phase (days 15-28): water retention, +250-500 cal appetite, carb cravings.\n\nWhat to do:\n• Allow 100-200 extra cal from complex carbs\n• Compare weight at same cycle phase monthly\n• Plan diet breaks during this phase\n\nRED FLAG: Period stops 3+ months → increase to 1,500 cal + see doctor."},{t:"⏸️ Diet Breaks (MATADOR Study)",c:"Intermittent restriction with 2-week breaks = 47% MORE weight loss!\n\nProtocol:\n• 6-8 weeks at 1,200 cal\n• 1-2 week break at ~1,500 cal\n• Keep protein high during breaks\n\nAfter 30 days: 5-7 day break at 1,500 cal, then Month 2."},{t:"🏥 Safety Guardrails",c:"RED-S risk: below 30 kcal/kg FFM/day = ~1,410 cal. At 1,200 + heavy exercise, monitor carefully.\n\nBlood work: CBC, iron/ferritin, B12, vitamin D, thyroid, fasting glucose.\n\nSee doctor if: period stops 3+ months · dizziness · hair loss · worsening knee pain · coldness · rapid loss >1 kg/wk\n\nRecalculate TDEE every 5-7 kg lost."},{t:"💧 Water Strategy",c:"Target: 2.2-2.7L daily.\n\nVirginia Tech: 500ml pre-meal = 2 kg more weight loss (44% better).\n\nTiming: on waking · 500ml before meals · sip all day · after workout · reduce 1 hr before bed.\n\nDizzy/cramps? Pinch of salt + lemon in water."},{t:"📊 Plateau Troubleshooting",c:"TRUE plateau: no change in weight, measurements, OR clothes for 3+ weeks.\n\nCheck first: measuring oil? · weekends tracked? · luteal phase? · stressed?\n\nIf stuck:\n1. Add 1,000 more steps\n2. Reduce 100 cal (never below 1,100)\n3. 5-day diet break\n\nTape measurements + photos every 2-4 weeks > scale."}];
+
+// Day generation
+const bC=["b1","b2","b3","b4","b5","b6","b7","b8"],lC=["l1","l2","l3","l4","l5","l6","l7","l8"],dC=["d1","d2","d3","d4","d5","d6","d7","d8"],sC=["s1","s2","s4","s5","s3","s8","s7","s6"];
+const wDs=[0,2,4],dL=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],wN=["Foundation","Momentum","Push","Consolidate"];
+const sG=[3000,3000,3000,3000,3000,3000,3000,3500,3500,4000,4000,4000,4000,4000,4500,4500,5000,5000,5000,5000,5000,5500,5500,6000,6000,6000,6000,6000,6000,6000];
+const DAYS=[];
+for(let i=0;i<30;i++){const wi=Math.floor(i/7),dw=i%7;DAYS.push({day:i+1,wi,dw,dl:dL[dw],type:wDs.includes(dw)?"workout":dw===6?"rest":dw===5?"active":"walk",wl:dw===0?"A":dw===2?"B":dw===4?"C":"",sg:sG[i],bk:bC[(i+wi)%8],ln:lC[(i+wi)%8],dn:dC[(i+wi)%8],sn:sC[(i+wi)%8],treat:dw===5,checkIn:dw===6,prep:dw===2||dw===6,briefing:BR[i],dd:DD[dw]});}
+
+// ==================== STATE ====================
+let st={tab:'today',sel:0,ck:{},wt:{},wa:{},hp:{},nt:{}};
+const gM=id=>ML[id]||null;
+
+function load(){try{const d=localStorage.getItem('fit30');if(d){const p=JSON.parse(d);st.ck=p.c||{};st.wt=p.w||{};st.wa=p.a||{};st.hp=p.h||{};st.nt=p.n||{};if(typeof p.s==='number')st.sel=p.s;}}catch(e){}}
+function save(){try{localStorage.setItem('fit30',JSON.stringify({c:st.ck,w:st.wt,a:st.wa,h:st.hp,n:st.nt,s:st.sel}));}catch(e){}}
+
+function toggle(di,k){const key=`${di}_${k}`;st.ck[key]=!st.ck[key];save();render();}
+function isChk(di,k){return!!st.ck[`${di}_${k}`];}
+function dayCount(di){let c=0;for(const k in st.ck)if(k.startsWith(di+'_')&&st.ck[k])c++;return c;}
+
+// ==================== RENDER ====================
+function render(){
+const dy=DAYS[st.sel],bm=gM(dy.bk),lm=gM(dy.ln),dm=gM(dy.dn),sm=gM(dy.sn);
+const tCal=(bm?.cal||0)+(lm?.cal||0)+(dm?.cal||0)+(sm?.cal||0);
+const tP=(bm?.p||0)+(lm?.p||0)+(dm?.p||0)+(sm?.p||0);
+const wo=dy.wl?WK[dy.wl]:null;
+const typeLabel={workout:`Workout ${dy.wl}`,walk:'Walk Day',active:'Active + Treat',rest:'Rest + Check-in'}[dy.type];
+const weekProg=dy.wi===0?"Focus on learning form. Light weight.":dy.wi===1?"Add 2 reps per set. Same weight.":dy.wi===2?"Increase weight by 1-2 kg.":"Add 4th set to 2-3 exercises. PBs!";
+
+let h=`
+<div class="hdr">
+  <div class="wk-label">Week ${dy.wi+1} · ${wN[dy.wi]}</div>
+  <div class="day-title">Day ${dy.day} · ${dy.dl}</div>
+  <div class="day-type ${dy.type}">${typeLabel}</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-v cyan">${tCal}</div><div class="stat-l">Calories</div></div>
+    <div class="stat"><div class="stat-v green">${tP}g</div><div class="stat-l">Protein</div></div>
+    <div class="stat"><div class="stat-v violet">${(dy.sg/1000).toFixed(1)}k</div><div class="stat-l">Steps</div></div>
+    <div class="stat"><div class="stat-v amber">2.5L</div><div class="stat-l">Water</div></div>
+  </div>
+  <div class="days-row" id="drow">`;
+for(let i=0;i<30;i++){const dc=dayCount(i),cls=i===st.sel?'sel':dc>=6?'done':dc>=2?'partial':'';h+=`<button class="day-btn ${cls}" onclick="setSel(${i})">${i+1}</button>`;}
+h+=`</div></div><div class="content">`;
+
+// Today tab
+h+=`<div class="tab-content ${st.tab==='today'?'active':''}" id="tab-today"><div class="anim">`;
+
+// Briefing
+h+=`<div class="gc accent"><div style="font-size:11px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📣 Today's Briefing</div><div style="font-size:13.5px;line-height:1.65;color:var(--t2)">${dy.briefing}</div></div>`;
+
+// Do/Don't
+h+=`<div class="dd-row"><div class="dd-card do"><h4>✅ Do Today</h4><ul>${dy.dd[0].map(d=>`<li>${d}</li>`).join('')}</ul></div><div class="dd-card dont"><h4>🚫 Avoid</h4><ul>${dy.dd[1].map(d=>`<li>${d}</li>`).join('')}</ul></div></div>`;
+
+// Meals
+h+=`<div class="sh">🍽️ Meals</div>`;
+const meals=[{k:'bk',l:'Breakfast',m:bm,dk:'breakfast'},{k:'sn',l:'Snack',m:sm,dk:'snack'},{k:'ln',l:'Lunch',m:lm,dk:'lunch'},{k:'dn',l:'Dinner',m:dm,dk:'dinner'}];
+for(const item of meals){if(!item.m)continue;
+const done=isChk(st.sel,item.dk);
+h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'${item.dk}')">✓</button><div><div style="font-size:11px;font-weight:700;color:var(--ac);margin-bottom:1px">${item.l}</div><div class="chk-title">${item.m.n}</div><div class="chk-sub"><span class="tag cyan">${item.m.cal} cal</span><span class="tag green">${item.m.p}g protein</span>${item.m.t?`<span class="tag violet">${item.m.t}</span>`:''}</div><div class="chk-why">${item.m.why}</div>${item.m.ing?`<button class="chk-link" onclick="openRecipe('${dy[item.k]}')">View full recipe →</button>`:''}</div></div>`;}
+
+// Workout / Walk / Active / Rest
+if(dy.type==='workout'&&wo){
+h+=`<div class="sh">🏋️ Workout ${dy.wl}</div><div class="gc green"><div style="font-size:16px;font-weight:800;margin-bottom:4px">${wo.name}</div><div style="font-size:13px;color:var(--t2);line-height:1.55;margin-bottom:8px">${wo.why}</div><div style="font-size:11px;color:var(--t3);font-style:italic;margin-bottom:4px">Week ${dy.wi+1}: ${weekProg}</div></div>`;
+h+=`<div class="phase-bar warm">🔥 WARM-UP (5 min): ${wo.warmup}</div>`;
+for(let i=0;i<wo.ex.length;i++){const e=wo.ex[i],done=isChk(st.sel,'ex'+i);
+h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'ex${i}')">✓</button><div><div class="ex-card" style="border:none;padding:0"><div class="ex-num">${i+1}</div><div><div class="ex-name">${e.name} <span class="ex-sets">· ${e.s}</span></div><div class="ex-why">${e.why}</div></div></div></div></div>`;}
+h+=`<div class="phase-bar cool">❄️ COOLDOWN (5 min): ${wo.cooldown}</div>`;}
+
+if(dy.type==='walk'){const done=isChk(st.sel,'walk');
+const walkTip=dy.sg<=3000?"One 10-minute walk at any time. Soft surfaces (grass, track) are easier on knees.":dy.sg<=4000?"Two short walks (10 min each). Same health benefits as 30 continuous minutes.":dy.sg<=5000?"Three 10-min walks. Monitor knees — if sharp pain, stay at last week's level.":"Almost at 6,000 steps! Break into walks throughout the day. Long single walk if knees feel good.";
+h+=`<div class="sh">🚶 Walking</div><div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'walk')">✓</button><div><div class="chk-title">${dy.sg.toLocaleString()} steps today</div><div class="chk-why">${walkTip}</div></div></div>`;}
+
+if(dy.type==='active'){const done=isChk(st.sel,'active');
+h+=`<div class="sh">🎯 Active Fun</div><div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'active')">✓</button><div><div class="chk-title">30 min of enjoyable movement</div><div class="chk-why">Not 'exercise' — FUN. Walk in park, YouTube dance, deep-clean, cycling, swimming. Finding activities you enjoy = lifelong fitness.</div></div></div>`;}
+
+if(dy.type==='rest'){h+=`<div class="sh">🧘 Rest Day</div><div class="gc" style="border-left:3px solid var(--t3)"><div style="font-size:14px;font-weight:700;margin-bottom:4px">Recovery Day</div><div style="font-size:13px;color:var(--t2);line-height:1.55">No exercise required. Light walk OK. Muscles recover and grow on rest days. Use today for meal prep + grocery planning.</div></div>`;}
+
+// Daily essentials
+h+=`<div class="sh">💊 Daily Essentials</div>`;
+const essentials=[['water','💧 2.5L water (500ml before each meal)','Pre-meal water = 44% more weight loss'],['oil','🥄 Oil: max 2-3 tsp today','1 extra tbsp = 120 hidden calories'],['chai','☕ Max 1 sweetened chai','Extra cups → green tea'],['log','📱 Log ALL food before bed','Loggers lost 2× more weight'],['sleep','😴 7.5+ hrs sleep','Poor sleep = 55% less fat loss'],['weigh','⚖️ Morning weigh-in','Before eating, after bathroom']];
+for(const[k,title,sub]of essentials){const done=isChk(st.sel,k);
+h+=`<div class="chk ${done?'done':''}"><button class="chk-box ${done?'checked':''}" onclick="toggle(${st.sel},'${k}')">✓</button><div><div class="chk-title">${title}</div><div class="chk-sub">${sub}</div></div></div>`;}
+
+// Context cards
+if(dy.prep)h+=`<div class="gc warn" style="margin-top:12px"><div style="font-size:12px"><strong style="color:var(--wn)">🥘 Meal Prep:</strong> Boil 6 eggs · Soak dal/rajma · Chop veggies · Make chutney · Portion chicken 130-150g</div></div>`;
+if(dy.treat)h+=`<div class="gc violet" style="margin-top:12px"><div style="font-size:12px"><strong style="color:var(--ac2)">🎉 Treat Day:</strong> Pick one — 20g dark chocolate + almonds, small mithai, 1 scoop ice cream, or 2 cookies (~150-200 cal). It's in the plan!</div></div>`;
+if(dy.checkIn)h+=`<div class="gc accent" style="margin-top:12px"><div style="font-size:12px"><strong style="color:var(--ac)">📊 Check-In:</strong> Go to Progress → log weight, waist, hips. Take a photo. Compare to same menstrual cycle phase!</div></div>`;
+if(dy.day===30)h+=`<div class="gc" style="margin-top:12px;background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(139,92,246,.1));border-color:var(--ac);text-align:center"><div style="font-size:32px;margin-bottom:4px">🏆</div><div style="font-size:18px;font-weight:800">30 Days Complete!</div><div style="font-size:12px;color:var(--t2);margin-top:4px">Take a 5-7 day diet break at ~1,500 cal. MATADOR study: 47% more fat loss with periodic breaks!</div></div>`;
+
+h+=`</div></div>`; // close anim + tab-today
+
+// Learn tab
+h+=`<div class="tab-content ${st.tab==='learn'?'active':''}" id="tab-learn"><div class="anim"><div style="font-size:18px;font-weight:800;margin-bottom:4px">Understanding Your Plan</div><div style="font-size:13px;color:var(--t3);margin-bottom:16px">The science behind every decision — tap to expand</div>`;
+for(let i=0;i<COACH.length;i++){const paras=COACH[i].c.split('\n\n').map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+h+=`<div class="acc" id="acc-${i}"><button class="acc-hdr" onclick="toggleAcc(${i})"><span>${COACH[i].t}</span><span class="acc-arrow">▼</span></button><div class="acc-body"><div class="acc-inner">${paras}</div></div></div>`;}
+h+=`</div></div>`;
+
+// Progress tab
+h+=`<div class="tab-content ${st.tab==='progress'?'active':''}" id="tab-progress"><div class="anim">`;
+h+=`<div style="font-size:18px;font-weight:800;margin-bottom:12px">Track Progress</div>`;
+h+=`<div class="gc"><div style="font-size:13px;font-weight:700;margin-bottom:10px">Weekly Average Weight (kg)</div>`;
+for(let w=0;w<4;w++){const v=st.wt[w]||'';const delta=v?`${(Number(v)-67).toFixed(1)} kg`:'—';
+h+=`<div class="input-row"><div class="input-label">Week ${w+1}</div><input class="input-field" type="number" step="0.1" placeholder="avg kg" value="${v}" onchange="setWt(${w},this.value)"><div class="input-delta" style="color:${v&&Number(v)<67?'var(--ok)':'var(--t3)'}">${delta}</div></div>`;}
+h+=`</div>`;
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;overflow:hidden">`;
+h+=`<div class="gc" style="margin:0;min-width:0;overflow:hidden"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Waist (cm)</div>`;
+for(let w=0;w<4;w++)h+=`<div class="input-row"><div class="input-label" style="width:32px">W${w+1}</div><input class="input-field" type="number" step="0.5" value="${st.wa[w]||''}" onchange="setWa(${w},this.value)"></div>`;
+h+=`</div><div class="gc" style="margin:0;min-width:0;overflow:hidden"><div style="font-size:12px;font-weight:700;margin-bottom:8px">Hips (cm)</div>`;
+for(let w=0;w<4;w++)h+=`<div class="input-row"><div class="input-label" style="width:32px">W${w+1}</div><input class="input-field" type="number" step="0.5" value="${st.hp[w]||''}" onchange="setHp(${w},this.value)"></div>`;
+h+=`</div></div>`;
+
+// Streak grid
+h+=`<div class="gc"><div style="font-size:13px;font-weight:700;margin-bottom:10px">30-Day Streak</div><div class="streak">`;
+['M','T','W','T','F','S','S'].forEach(d=>{h+=`<div class="streak-hdr">${d}</div>`;});
+for(let i=0;i<30;i++){const dc=dayCount(i),p=dc/12;const cls=p>=.5?'great':p>=.15?'good':'';
+h+=`<div class="streak-day ${cls}" onclick="setSel(${i});setTab('today')">${i+1}</div>`;}
+h+=`</div></div>`;
+
+// Notes
+h+=`<div class="gc"><div style="font-size:13px;font-weight:700;margin-bottom:8px">📝 Weekly Notes</div>`;
+for(let w=0;w<4;w++)h+=`<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:3px">Week ${w+1}</div><textarea class="input-field" rows="2" placeholder="Energy, hunger, mood, cycle phase..." onchange="setNt(${w},this.value)">${st.nt[w]||''}</textarea></div>`;
+h+=`</div>`;
+h+=`<div class="gc warn"><div style="font-size:12px;color:var(--t2)"><strong style="color:var(--wn)">📅 Cycle tip:</strong> Compare weight at same menstrual phase each month. Luteal phase = 0.5-2.3 kg water, not fat!</div></div>`;
+h+=`</div></div>`;
+
+// Close content
+h+=`</div>`;
+
+// Nav
+h+=`<div class="nav"><button class="nav-btn ${st.tab==='today'?'active':''}" onclick="setTab('today')"><span>📋</span><span>Today</span></button><button class="nav-btn ${st.tab==='learn'?'active':''}" onclick="setTab('learn')"><span>🎓</span><span>Learn</span></button><button class="nav-btn ${st.tab==='progress'?'active':''}" onclick="setTab('progress')"><span>📊</span><span>Progress</span></button></div>`;
+
+// Modal container
+h+=`<div class="modal-bg" id="modal-bg" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div id="modal-body"></div></div></div>`;
+
+document.getElementById('app').innerHTML=h;
+
+// Scroll selected day into view
+setTimeout(()=>{const row=document.getElementById('drow');if(row){const btn=row.children[st.sel];if(btn)btn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}},50);
+}
+
+// ==================== ACTIONS ====================
+window.setSel=function(i){st.sel=i;save();render();window.scrollTo(0,0);};
+window.setTab=function(t){st.tab=t;render();window.scrollTo(0,0);};
+window.setWt=function(w,v){st.wt[w]=v;save();};
+window.setWa=function(w,v){st.wa[w]=v;save();};
+window.setHp=function(w,v){st.hp[w]=v;save();};
+window.setNt=function(w,v){st.nt[w]=v;save();};
+
+window.openRecipe=function(id){
+const m=gM(id);if(!m)return;
+let h=`<div class="modal-title" style="color:var(--ac)">${m.n}</div>`;
+h+=`<div style="margin-bottom:12px">${[['Cal',m.cal,'cyan'],['Protein',m.p+'g','green'],['Carbs',(m.c||'?')+'g','violet'],['Fat',(m.f||'?')+'g','amber']].map(x=>`<span class="tag ${x[2]}">${x[0]}: ${x[1]}</span>`).join('')}${m.t?`<span class="tag cyan">⏱ ${m.t}</span>`:''}</div>`;
+h+=`<div class="gc accent" style="margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--ac);margin-bottom:3px">Why this meal</div><div style="font-size:13px;color:var(--t2);line-height:1.6">${m.why}</div></div>`;
+if(m.ing)h+=`<div style="font-size:13px;font-weight:700;margin-bottom:4px">📦 Ingredients</div><div class="modal-section">${m.ing}</div>`;
+if(m.how)h+=`<div style="font-size:13px;font-weight:700;margin-bottom:4px">👩‍🍳 How to Make</div><div class="modal-section">${m.how}</div>`;
+showModal(h);};
+
+window.toggleAcc=function(i){
+const el=document.getElementById('acc-'+i);
+if(!el)return;
+const wasOpen=el.classList.contains('open');
+// Close all others
+document.querySelectorAll('.acc.open').forEach(a=>{if(a!==el)a.classList.remove('open');});
+if(!wasOpen){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),100);}
+else el.classList.remove('open');
+};
+
+function showModal(html){
+document.getElementById('modal-body').innerHTML=html;
+document.getElementById('modal-bg').classList.add('show');
+document.body.style.overflow='hidden';}
+
+window.closeModal=function(){
+document.getElementById('modal-bg').classList.remove('show');
+document.body.style.overflow='';};
+
+// ==================== INIT ====================
+load();render();
+
+// PWA manifest (inline blob)
+const icon=document.createElement('canvas');icon.width=512;icon.height=512;
+const ctx=icon.getContext('2d');
+ctx.fillStyle='#0a0a0f';ctx.beginPath();ctx.moveTo(96,0);ctx.lineTo(416,0);ctx.quadraticCurveTo(512,0,512,96);ctx.lineTo(512,416);ctx.quadraticCurveTo(512,512,416,512);ctx.lineTo(96,512);ctx.quadraticCurveTo(0,512,0,416);ctx.lineTo(0,96);ctx.quadraticCurveTo(0,0,96,0);ctx.fill();
+const gr=ctx.createLinearGradient(128,128,384,384);gr.addColorStop(0,'#06b6d4');gr.addColorStop(1,'#8b5cf6');
+ctx.fillStyle=gr;ctx.font='bold 240px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('30',256,240);
+ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='bold 60px system-ui';ctx.fillText('FIT',256,380);
+const iconURL=icon.toDataURL('image/png');
+document.getElementById('ati').href=iconURL;
+const manifest={name:"Fit30 — 30-Day Fat Loss",short_name:"Fit30",start_url:location.href.split('?')[0],display:"standalone",background_color:"#0a0a0f",theme_color:"#0a0a0f",icons:[{src:iconURL,sizes:"512x512",type:"image/png"}]};
+const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+document.getElementById('mf').href=URL.createObjectURL(blob);
+
+// Service worker
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+</script>
+</body>
+</html>
